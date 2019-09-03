@@ -34,7 +34,7 @@ func main() {
 
 func main() {
 	go func() {
-		w := app.NewWindow()
+		w := app.NewWindow(app.WithTitle("AST Viewer"))
 		if err := loop(w); err != nil {
 			log.Fatal(err)
 		}
@@ -63,9 +63,11 @@ func loop(w *app.Window) error {
 			cfg = e.Config
 			faces.Reset(&cfg)
 			ops.Reset()
-			flex := layout.Flex{Spacing: layout.SpaceBetween}
 			cs := layout.RigidConstraints(e.Size)
+			flex := layout.Flex{}
 			flex.Init(ops, cs)
+
+			// handle text update and update string to parse
 			queue := w.Queue()
 			for e, ok := edtr.Next(&cfg, queue); ok; e, ok = edtr.Next(&cfg, queue) {
 				if _, ok = e.(text.ChangeEvent); ok {
@@ -81,6 +83,8 @@ func loop(w *app.Window) error {
 					}
 				}
 			}
+
+			// layout editor view
 			cs = flex.Flexible(0.49)
 			dims := edtr.Layout(&cfg, queue, ops, cs)
 			leftside := flex.End(dims)
@@ -98,6 +102,7 @@ func loop(w *app.Window) error {
 			dims = layout.Dimensions{Size: image.Point{X: cs.Width.Max, Y: cs.Height.Max}}
 			centerline := flex.End(dims)
 
+			// layout tree to right side
 			cs = flex.Flexible(0.5)
 			if l.Dragging() {
 				key.HideInputOp{}.Add(ops)
