@@ -17,7 +17,7 @@ import (
 	"gioui.org/ui/paint"
 	"gioui.org/ui/text"
 	"github.com/knsh14/astree"
-	"golang.org/x/image/font/gofont/goregular"
+	"golang.org/x/image/font/gofont/gomono"
 	"golang.org/x/image/font/sfnt"
 )
 
@@ -44,11 +44,11 @@ func main() {
 
 func loop(w *app.Window) error {
 	var cfg app.Config
-	regular, _ := sfnt.Parse(goregular.TTF)
+	mono, _ := sfnt.Parse(gomono.TTF)
 	var faces measure.Faces
 	ops := new(ui.Ops)
 	edtr := &text.Editor{
-		Face:       faces.For(regular, ui.Dp(20)),
+		Face:       faces.For(mono, ui.Dp(22)),
 		Submit:     false,
 		SingleLine: false,
 		Hint:       initial,
@@ -109,7 +109,7 @@ func loop(w *app.Window) error {
 			}
 			for l.Init(&cfg, queue, ops, cs, 1); l.More(); l.Next() {
 				dims = text.Label{
-					Face: faces.For(regular, ui.Dp(20)),
+					Face: faces.For(mono, ui.Dp(16)),
 					Text: input,
 				}.Layout(ops, l.Constraints())
 				l.End(dims)
