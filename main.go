@@ -21,7 +21,8 @@ import (
 	"golang.org/x/image/font/sfnt"
 )
 
-const initial = `
+const (
+	initial = `
 package main
 
 import (
@@ -32,9 +33,15 @@ func main() {
 	fmt.Println("Hello, playground")
 }`
 
+	separateLineWidth = 10
+)
+
 func main() {
 	go func() {
-		w := app.NewWindow(app.WithTitle("AST Viewer"))
+		w := app.NewWindow(
+			app.WithTitle("AST Viewer"),
+			app.WithWidth(ui.Value{V: 3200, U: ui.UnitPx}),
+		)
 		if err := loop(w); err != nil {
 			log.Fatal(err)
 		}
@@ -53,7 +60,7 @@ func loop(w *app.Window) error {
 		SingleLine: false,
 		Hint:       initial,
 	}
-	input := ""
+	output := ""
 	edtr.SetText(initial)
 	l := &layout.List{Axis: layout.Vertical}
 	for {
@@ -75,11 +82,11 @@ func loop(w *app.Window) error {
 					code := edtr.Text()
 					f, err := parser.ParseFile(fs, "main.go", code, 0)
 					if err != nil {
-						input = err.Error()
+						output = err.Error()
 					} else {
 						var buf bytes.Buffer
 						astree.File(&buf, fs, f)
-						input = buf.String()
+						output = buf.String()
 					}
 				}
 			}
@@ -90,16 +97,16 @@ func loop(w *app.Window) error {
 			leftside := flex.End(dims)
 
 			// draw a black line to separate
-			cs = flex.Flexible(0.01)
+			cs = flex.Rigid()
 			square := f32.Rectangle{
 				Max: f32.Point{
-					X: float32(cs.Width.Max),
+					X: separateLineWidth,
 					Y: float32(cs.Height.Max),
 				},
 			}
 			paint.ColorOp{Color: color.RGBA{A: 0xff}}.Add(ops)
 			paint.PaintOp{Rect: square}.Add(ops)
-			dims = layout.Dimensions{Size: image.Point{X: cs.Width.Max, Y: cs.Height.Max}}
+			dims = layout.Dimensions{Size: image.Point{X: separateLineWidth, Y: cs.Height.Max}}
 			centerline := flex.End(dims)
 
 			// layout tree to right side
@@ -110,7 +117,7 @@ func loop(w *app.Window) error {
 			for l.Init(&cfg, queue, ops, cs, 1); l.More(); l.Next() {
 				dims = text.Label{
 					Face: faces.For(mono, ui.Dp(16)),
-					Text: input,
+					Text: output,
 				}.Layout(ops, l.Constraints())
 				l.End(dims)
 			}
